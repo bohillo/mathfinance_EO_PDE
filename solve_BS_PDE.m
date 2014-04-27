@@ -26,7 +26,7 @@ function V = solve_BS_PDE (r0, r1, sigma, term_cond, left_cond, \
 	   d(1) = .5*A(1) * (left_cond(k) + left_cond(k+1));
 	   d(end) = .5*C(end) * (right_cond(k) + right_cond(k+1));
 	   V(2:Mx) = M1\(M2*V(2:Mx) + d);
-	 #  V = V .* (x > left_bound(k) - dx / 2 & x < right_bound(k) + dx/2);
+	   V = V .* (x > left_bound(k) - dx / 2 & x < right_bound(k) + dx/2);
 	 endfor
 					  
 	 V = V';
