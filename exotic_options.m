@@ -1,18 +1,20 @@
 1;
-function [result_DM_doamcall] = DM_doamcall(F_bid,F_ask,barrier,strike, MF, issue_date,expire_date,PPO,OSO,type)
+function [result_DM_doamcall] = DM_doamcall(F_bid, F_ask, barrier, strike, monitoring_dates, issue_date,expire_date,PPO,OSO,type)
  global DCC;
  global FC_DOM;
  global DSQ_Bid;
  global DSQ_Ask;
  global DSB_Bid;
  global DSB_Ask;
-
- ## hardcoded so far
- DCC = 'ACT/360';
- ##
  
  tau = year_frac(issue_date,expire_date,DCC);
- 
+
+ monitoring_t = zeros(size(monitoring_dates));
+
+ for i = 1:length(monitoring_dates)
+  monitoring_t(i) = year_frac(issue_date, monitoring_dates(i), DCC);
+ endfor
+
  DF_d_bid = DF(issue_date,{expire_date},DSQ_Bid)(1);
  DF_d_ask = DF(issue_date,{expire_date},DSQ_Ask)(1);
  DF_f_bid = DF(issue_date,{expire_date},DSB_Bid)(1);
@@ -49,12 +51,21 @@ function [result_DM_doamcall] = DM_doamcall(F_bid,F_ask,barrier,strike, MF, issu
  
  %%%%%%%%%%%%%%%
  
+ % monitoring dates adjustment
+ 
+ Mt_adj = round(100000 * tau / gcd(round(100000 * monitoring_t)(2), round(100000 * monitoring_t)(3)));
+ Mt = ceil(Mt / Mt_adj) * Mt_adj;
+ dt = tau / Mt;
+ monitoring_k = round(monitoring_t / dt) + 1;
+ monitoring_ind = zeros(Mt + 1, 1); 
+ monitoring_ind(monitoring_k) = 1;
  
  
+
  %% parameters of BS equation
  r0 = -log(DF_d)/tau;
  r1 = -log(DF_f)/tau;
- xmin = barrier;
+ xmin = 0;
  xmax = xmax_factor * F * DF_d / DF_f ;
  x = linspace(xmin, xmax, Mx + 1);
  t = linspace(0, tau, Mt + 1);
@@ -64,7 +75,7 @@ function [result_DM_doamcall] = DM_doamcall(F_bid,F_ask,barrier,strike, MF, issu
  left_cond = zeros(Mt + 1, 1);
  right_cond = (xmax - strike) * ones(Mt + 1, 1);
  
- left_bound = zeros(Mt + 1, 1);
+ left_bound = barrier * monitoring_ind;
  right_bound = xmax * ones(Mt + 1, 1);
  
  
@@ -84,7 +95,6 @@ function V = solve_BS_PDE (r0, r1, sigma, term_cond, left_cond, \
 	 dt = T / Mt;
 	 dx = (xmax - xmin)/Mx;
 
-
 	 for k = Mt:-1:1
 
 	   ## Auxillary vectors for numerical scheme
@@ -93,7 +103,6 @@ function V = solve_BS_PDE (r0, r1, sigma, term_cond, left_cond, \
 	   A = .5*(sigma(:,k).^2.*is.^2-r*is)*dt;
 	   B = -(sigma(:,k).^2.*is.^2 + r0)*dt;
 	   C = .5*(sigma(:,k).^2.*is.^2 + r*is)*dt;
-
 
 	   ## Only Crank - Nicholson so far
 	   M1 = -spdiags([.5*C(2:Mx), .5*B(2:Mx)-1, .5*A(2:Mx)], [-1 0 1], Mx-1, Mx-1)';
