@@ -6,10 +6,12 @@ FOR_dis_factor;
 exotic_options;
 
 global DCC;
- ## hardcoded so far
- DCC = 'ACT/ACT';
- ##
+global Mx;
+global Mt;
 
+DCC = 'ACT/ACT';
+Mx = 2000;
+Mt = 500;
 
 S0 = 100;
 
@@ -23,7 +25,7 @@ PPO = 0;
 OSO = 0;
 type = 'bid';
 
-F_bid = S0*exp(0.1 * year_frac(issue_date, expire_date, "ACT/ACT")) ;
+F_bid = S0*exp(0.025952 * year_frac(issue_date, expire_date, "ACT/ACT")) ;
 F_ask = F_bid;
 
 monitoring_dates = repmat(cellstr(expire_date), [1, day_diff(issue_date, expire_date, 'ACT')]);
