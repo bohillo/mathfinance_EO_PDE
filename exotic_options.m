@@ -1,89 +1,102 @@
 1;
-function [result_DM_doamcall] = DM_doamcall(F_bid, F_ask, barrier, strike, monitoring_dates, issue_date,expire_date,PPO,OSO,type)
- %% PDE grid globals
- global Mx;
- global Mt;
-
- if (type == "bid")
-   F = F_bid;
-  else
-   F = F_ask;
- endif
- 
- [tau, tau_mod, DF_dG, DF_d, DF_f] = prepare_data(issue_date, expire_date, OSO, PPO, type);
- % monitoring dates adjustment
- [t, monitoring_ind] = adj_time_grid (tau, Mt, issue_date, expire_date, monitoring_dates);
- Mt = length(t) - 1;
-%% parameters of BS equation 
- r0 = -log(DF_d)/tau;
- r1 = -log(DF_f)/tau;
- 
- S0 = F * DF_d / DF_f;
- xmin = 0;
- xmax = set_xmax(S0, tau, vol(0, S0, strike, tau));
- x = linspace(xmin, xmax, Mx + 1);
- dx = (xmax - xmin)/Mx;
- dt = tau / Mt;
- sigma = vol(t, x, strike, tau);
-
- term_cond = max(x - strike, 0);
- left_cond = zeros(Mt + 1, 1);
- right_cond = (xmax - strike) * ones(Mt + 1, 1);
- 
- left_bound = barrier * monitoring_ind;
- right_bound = xmax * ones(Mt + 1, 1);
- 
- 
- result_DM_doamcall = calc_price_greeks (r0, r1, sigma, term_cond, left_cond, right_cond, \
-				   left_bound, right_bound, xmin, xmax, tau, Mx, Mt, \
-				   S0);
- 
- %OSO/PPO adjustment to code
+wroblewski_ap_new;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                 
+%%% Functions for option valuation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function result = ImpVol(strike,issue_date,expire_date)
+	 result =.2; ## TBR
 endfunction
 
-function [result_DM_doamput] = DM_doamput(F_bid, F_ask, barrier, strike, monitoring_dates, issue_date,expire_date,PPO,OSO,type)
- %% PDE grid globals
- global Mx;
- global Mt;
+function [result] = DM_out(F_bid, F_ask, barrier, strike,
+			   monitoring_dates,
+			   issue_date,expire_date,PPO,OSO,price_type, \
+                           barrier_type, payoff_type)
+  %% PDE grid globals
+  global Mx;
+  global Mt;
 
- if (type == "bid")
-   F = F_bid;
+  if (price_type == "bid")
+    F = F_bid;
   else
-   F = F_ask;
- endif
- 
- [tau, tau_mod, DF_dG, DF_d, DF_f] = prepare_data(issue_date, expire_date, OSO, PPO, type);
- % monitoring dates adjustment
- [t, monitoring_ind] = adj_time_grid (tau, Mt, issue_date, expire_date, monitoring_dates);
- Mt = length(t) - 1;
-%% parameters of BS equation 
- r0 = -log(DF_d)/tau;
- r1 = -log(DF_f)/tau;
- 
- S0 = F * DF_d / DF_f;
- xmin = 0;
- xmax = set_xmax(S0, tau, vol(0, S0, strike, tau));
- x = linspace(xmin, xmax, Mx + 1);
- dx = (xmax - xmin)/Mx;
- dt = tau / Mt;
- sigma = vol(t, x, strike, tau);
+    F = F_ask;
+  endif
+  
+  [tau, tau_mod, DF_dG, DF_d, DF_f] = prepare_data(issue_date, expire_date, OSO, PPO, price_type);
+  % monitoring dates adjustment
+  [t, monitoring_ind] = adj_time_grid (tau, Mt, issue_date, expire_date, monitoring_dates);
+  Mt = length(t) - 1;
+  %% parameters of BS equation 
+  r0 = -log(DF_d)/tau;
+  r1 = -log(DF_f)/tau;
+  S0 = F * DF_d / DF_f;
+  xmin = 0;
+  xmax = set_xmax(S0, tau, vol(0, S0, strike, tau));
+  x = linspace(xmin, xmax, Mx + 1);
+  dx = (xmax - xmin)/Mx;
+  dt = tau / Mt;
+  sigma = vol(t, x, strike, tau);
 
- term_cond = max(strike - x, 0);
- left_cond = strike * ones(Mt + 1, 1) .* exp(-r0 * (tau - t'));
- right_cond = zeros(Mt + 1, 1);
- 
- left_bound = barrier * monitoring_ind;
- right_bound = xmax * ones(Mt + 1, 1);
- 
- 
- result_DM_doamput = calc_price_greeks (r0, r1, sigma, term_cond, left_cond, right_cond, \
-				   left_bound, right_bound, xmin, xmax, tau, Mx, Mt, \
-				   S0);
- 
- %OSO/PPO adjustment to code
+
+  if strcmp(payoff_type,"put")
+    left_cond = strike * ones(Mt + 1, 1) .* exp(-r0 * (tau - t'));
+    right_cond = zeros(Mt + 1, 1);
+    term_cond = max(strike - x, 0); 
+  elseif strcmp(payoff_type,"call")
+    term_cond = max(x - strike, 0);
+    left_cond = zeros(Mt + 1, 1);
+    right_cond = (xmax - strike) * ones(Mt + 1, 1);
+  else
+    left_cond = strike * ones(Mt + 1, 1) .* exp(-r0 * (tau - t'));
+    right_cond = zeros(Mt + 1, 1);
+    term_cond = max(x - strike, 0);   
+  endif
+
+  if strcmp(barrier_type,"up") 
+    left_bound =  zeros(Mt + 1, 1);
+    right_bound = barrier * monitoring_ind + xmax * !monitoring_ind;
+  elseif strcmp(barrier_type, "down")
+    right_bound =  xmax * ones(Mt + 1, 1);
+    left_bound = barrier * monitoring_ind;
+  else
+    left_bound =  zeros(Mt + 1, 1);
+    right_bound = xmax * ones(Mt + 1, 1);
+  endif
+
+  result = calc_price_greeks (r0, r1, sigma, term_cond, left_cond, right_cond, \
+			      left_bound, right_bound, xmin, xmax, tau, Mx, Mt, \
+			      S0);
+  
+%OSO/PPO adjustment to code
 endfunction
 
+function [result] = DM_in(F_bid, F_ask, barrier, strike,
+				      monitoring_dates,
+				      issue_date,expire_date,PPO,OSO,price_type, \
+                                      barrier_type, payoff_type)
+%% Co z Vega?
+ if strcmp(payoff_type, "call")
+   result = \
+   call(F_bid,F_ask,strike,issue_date,expire_date,PPO,OSO,price_type) - \
+   DM_out(F_bid, F_ask, barrier, strike,
+				      monitoring_dates,
+				      issue_date,expire_date,PPO,OSO,price_type, \
+                                      barrier_type, payoff_type);
+ elseif strcmp(payoff_type, "put") 
+   result = \
+   put(F_bid,F_ask,strike,issue_date,expire_date,PPO,OSO,price_type) - \
+   DM_out(F_bid, F_ask, barrier, strike,
+				      monitoring_dates,
+				      issue_date,expire_date,PPO,OSO,price_type, \
+                                      barrier_type, payoff_type);
+ else
+   result = call(F_bid,F_ask,strike,issue_date,expire_date,PPO,OSO,price_type);
+ endif
+endfunction
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                 
+%%% Auxilary functions  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                     
 function [tau, tau_mod, DF_dG, DF_d, DF_f] = prepare_data(issue_date, expire_date, OSO, PPO, type)  
    %% Market globals
    global DCC;

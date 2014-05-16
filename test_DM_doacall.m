@@ -1,10 +1,11 @@
+
 addpath("input");
 DOM_data_in;
 DOM_dis_factor;
 FOR_data_in;
 FOR_dis_factor;
 exotic_options;
-
+format long;
 global DCC;
 global Mx;
 global Mt;
@@ -17,7 +18,7 @@ dsigma = 0.001;
 
 S0 = 100;
 
-barrier = 90;
+barrier = 110;
 strike = 100;
 MF = 1;
 issue_date = '25-Aug-2009';
@@ -45,6 +46,8 @@ until day_diff(date, expire_date, 'ACT') <= 0;
 
 
 
-DM_doamcall(F_bid,F_ask,barrier,strike, monitoring_dates, issue_date,expire_date,PPO,OSO,type)
+DM_out(F_bid,F_ask,barrier,strike, monitoring_dates, \
+       issue_date,expire_date,PPO,OSO,type, "up", "call")
 
-DM_doamput(F_bid,F_ask,barrier,strike, monitoring_dates, issue_date,expire_date,PPO,OSO,type)
+DM_in(F_bid,F_ask,barrier,strike, monitoring_dates, \
+      issue_date,expire_date,PPO,OSO,type, "up", "call")
