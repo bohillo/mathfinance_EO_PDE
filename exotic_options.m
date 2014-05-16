@@ -1,51 +1,20 @@
 1;
 function [result_DM_doamcall] = DM_doamcall(F_bid, F_ask, barrier, strike, monitoring_dates, issue_date,expire_date,PPO,OSO,type)
- 
- %% Market globals
- global DCC;
- global FC_DOM;
- global DSQ_Bid;
- global DSQ_Ask;
- global DSB_Bid;
- global DSB_Ask;
- 
  %% PDE grid globals
  global Mx;
  global Mt;
- 
- tau = year_frac(issue_date,expire_date,DCC);
 
- DF_d_bid = DF(issue_date,{expire_date},DSQ_Bid)(1);
- DF_d_ask = DF(issue_date,{expire_date},DSQ_Ask)(1);
- DF_f_bid = DF(issue_date,{expire_date},DSB_Bid)(1);
- DF_f_ask = DF(issue_date,{expire_date},DSB_Ask)(1);
- 
- # data preparation for discounting with real dates of cash flows
- issue_mod = day_shift2(issue_date,FC_DOM, PPO);
- expire_mod = day_shift2(expire_date,FC_DOM, OSO);
- tau_mod = year_frac(issue_mod,expire_mod,DCC);
- 
- # modified discount factors for real dates of cash flows
- DF_d_bid_mod = DF(issue_mod,{expire_mod},DSQ_Bid)(1);
- DF_d_ask_mod = DF(issue_mod,{expire_mod},DSQ_Ask)(1);
- 
  if (type == "bid")
-   DF_dG = DF_d_ask_mod;
    F = F_bid;
-   DF_d = DF_d_bid;
-   DF_f = DF_f_ask;
   else
-   DF_dG = DF_d_bid_mod;
    F = F_ask;
-   DF_d = DF_d_ask;
-   DF_f = DF_f_bid;
  endif
-
-
+ 
+ [tau, tau_mod, DF_dG, DF_d, DF_f] = prepare_data(issue_date, expire_date, OSO, PPO, type);
  % monitoring dates adjustment
  [t, monitoring_ind] = adj_time_grid (tau, Mt, issue_date, expire_date, monitoring_dates);
-  
- %% parameters of BS equation
+ Mt = length(t) - 1;
+%% parameters of BS equation 
  r0 = -log(DF_d)/tau;
  r1 = -log(DF_f)/tau;
  
@@ -53,7 +22,6 @@ function [result_DM_doamcall] = DM_doamcall(F_bid, F_ask, barrier, strike, monit
  xmin = 0;
  xmax = set_xmax(S0, tau, vol(0, S0, strike, tau));
  x = linspace(xmin, xmax, Mx + 1);
- t = linspace(0, tau, Mt + 1);
  dx = (xmax - xmin)/Mx;
  dt = tau / Mt;
  sigma = vol(t, x, strike, tau);
@@ -66,14 +34,92 @@ function [result_DM_doamcall] = DM_doamcall(F_bid, F_ask, barrier, strike, monit
  right_bound = xmax * ones(Mt + 1, 1);
  
  
- dsigma = 0.001;
  result_DM_doamcall = calc_price_greeks (r0, r1, sigma, term_cond, left_cond, right_cond, \
 				   left_bound, right_bound, xmin, xmax, tau, Mx, Mt, \
-				   S0, dsigma);
+				   S0);
  
- 
-
+ %OSO/PPO adjustment to code
 endfunction
+
+function [result_DM_doamput] = DM_doamput(F_bid, F_ask, barrier, strike, monitoring_dates, issue_date,expire_date,PPO,OSO,type)
+ %% PDE grid globals
+ global Mx;
+ global Mt;
+
+ if (type == "bid")
+   F = F_bid;
+  else
+   F = F_ask;
+ endif
+ 
+ [tau, tau_mod, DF_dG, DF_d, DF_f] = prepare_data(issue_date, expire_date, OSO, PPO, type);
+ % monitoring dates adjustment
+ [t, monitoring_ind] = adj_time_grid (tau, Mt, issue_date, expire_date, monitoring_dates);
+ Mt = length(t) - 1;
+%% parameters of BS equation 
+ r0 = -log(DF_d)/tau;
+ r1 = -log(DF_f)/tau;
+ 
+ S0 = F * DF_d / DF_f;
+ xmin = 0;
+ xmax = set_xmax(S0, tau, vol(0, S0, strike, tau));
+ x = linspace(xmin, xmax, Mx + 1);
+ dx = (xmax - xmin)/Mx;
+ dt = tau / Mt;
+ sigma = vol(t, x, strike, tau);
+
+ term_cond = max(strike - x, 0);
+ left_cond = strike * ones(Mt + 1, 1) .* exp(-r0 * (tau - t'));
+ right_cond = zeros(Mt + 1, 1);
+ 
+ left_bound = barrier * monitoring_ind;
+ right_bound = xmax * ones(Mt + 1, 1);
+ 
+ 
+ result_DM_doamput = calc_price_greeks (r0, r1, sigma, term_cond, left_cond, right_cond, \
+				   left_bound, right_bound, xmin, xmax, tau, Mx, Mt, \
+				   S0);
+ 
+ %OSO/PPO adjustment to code
+endfunction
+
+
+function [tau, tau_mod, DF_dG, DF_d, DF_f] = prepare_data(issue_date, expire_date, OSO, PPO, type)  
+   %% Market globals
+   global DCC;
+   global FC_DOM;
+   global DSQ_Bid;
+   global DSQ_Ask;
+   global DSB_Bid;
+   global DSB_Ask;
+   tau = year_frac(issue_date,expire_date,DCC);
+
+   DF_d_bid = DF(issue_date,{expire_date},DSQ_Bid)(1);
+   DF_d_ask = DF(issue_date,{expire_date},DSQ_Ask)(1);
+   DF_f_bid = DF(issue_date,{expire_date},DSB_Bid)(1);
+   DF_f_ask = DF(issue_date,{expire_date},DSB_Ask)(1);
+   
+   # data preparation for discounting with real dates of cash flows
+   issue_mod = day_shift2(issue_date,FC_DOM, PPO);
+   expire_mod = day_shift2(expire_date,FC_DOM, OSO);
+   tau_mod = year_frac(issue_mod,expire_mod,DCC);
+   
+   # modified discount factors for real dates of cash flows
+   DF_d_bid_mod = DF(issue_mod,{expire_mod},DSQ_Bid)(1);
+   DF_d_ask_mod = DF(issue_mod,{expire_mod},DSQ_Ask)(1);
+
+   if (type == "bid")
+	 DF_dG = DF_d_ask_mod;
+	 DF_d = DF_d_bid;
+	 DF_f = DF_f_ask;
+   else
+	 DF_dG = DF_d_bid_mod;
+	 DF_d = DF_d_ask;
+	 DF_f = DF_f_bid;
+   endif
+ 
+ endfunction 
+
 
 
 function res = solve_BS_PDE (r0, r1, sigma, term_cond, left_cond, \
@@ -152,9 +198,9 @@ endfunction
 
 function res = calc_price_greeks (r0, r1, sigma, term_cond, left_cond, right_cond, \
 				   left_bound, right_bound, xmin, xmax, T, Mx, Mt, \
-				   S0, dsigma)
+				   S0)
 
-
+  global dsigma;
   res = zeros(1, 7);
   dx = (xmin - xmax) / Mx;
   dt = T / Mt;

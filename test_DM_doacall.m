@@ -8,10 +8,12 @@ exotic_options;
 global DCC;
 global Mx;
 global Mt;
+global dsigma;
 
 DCC = 'ACT/ACT';
 Mx = 2000;
 Mt = 500;
+dsigma = 0.001;
 
 S0 = 100;
 
@@ -45,4 +47,4 @@ until day_diff(date, expire_date, 'ACT') <= 0;
 
 DM_doamcall(F_bid,F_ask,barrier,strike, monitoring_dates, issue_date,expire_date,PPO,OSO,type)
 
-DM_doamcall(F_bid,F_ask,barrier,strike, monitoring_dates, issue_date,expire_date,PPO,OSO,'ask')
+DM_doamput(F_bid,F_ask,barrier,strike, monitoring_dates, issue_date,expire_date,PPO,OSO,type)
