@@ -1,8 +1,10 @@
 1;
 wroblewski_ap_new;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                 
 %%% Functions for option valuation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function result = ImpVol(strike,issue_date,expire_date)
 	 result =.2; ## TBR
 endfunction
@@ -36,7 +38,6 @@ function [result] = DM_out(F_bid, F_ask, barrier, strike,
   dt = tau / Mt;
   sigma = vol(t, x, strike, tau);
 
-
   if strcmp(payoff_type,"put")
     left_cond = strike * ones(Mt + 1, 1) .* exp(-r0 * (tau - t'));
     right_cond = zeros(Mt + 1, 1);
@@ -61,7 +62,8 @@ function [result] = DM_out(F_bid, F_ask, barrier, strike,
     left_bound =  zeros(Mt + 1, 1);
     right_bound = xmax * ones(Mt + 1, 1);
   endif
-
+ 
+ 
   result = calc_price_greeks (r0, r1, sigma, term_cond, left_cond, right_cond, \
 			      left_bound, right_bound, xmin, xmax, tau, Mx, Mt, \
 			      S0);
@@ -92,6 +94,159 @@ function [result] = DM_in(F_bid, F_ask, barrier, strike,
    result = call(F_bid,F_ask,strike,issue_date,expire_date,PPO,OSO,price_type);
  endif
 endfunction
+
+
+function [result] = DoubleKO(F_bid, F_ask, Lbarrier, Ubarrier, strike,
+			   monitoring_dates,
+			   issue_date,expire_date,PPO,OSO,price_type, \
+			   payoff_type)
+
+  %% PDE grid globals
+  global Mx;
+  global Mt;
+
+  if (price_type == "bid")
+    F = F_bid;
+  else
+    F = F_ask;
+  endif
+  
+  [tau, tau_mod, DF_dG, DF_d, DF_f] = prepare_data(issue_date, expire_date, OSO, PPO, price_type);
+  % monitoring dates adjustment
+  [t, monitoring_ind] = adj_time_grid (tau, Mt, issue_date, expire_date, monitoring_dates);
+  Mt = length(t) - 1;
+  %% parameters of BS equation 
+  r0 = -log(DF_d)/tau
+  r1 = -log(DF_f)/tau
+  S0 = F * DF_d / DF_f
+
+  if isempty(monitoring_dates)
+    xmin = Lbarrier;
+    xmax = Ubarrier;
+  else
+    xmin = 0;
+    xmax = set_xmax(S0, tau, vol(0, S0, strike, tau));
+  endif
+
+  x = linspace(xmin, xmax, Mx + 1);
+  dx = (xmax - xmin)/Mx;
+  dt = tau / Mt;
+  sigma = vol(t, x, strike, tau);
+
+  if strcmp(payoff_type,"put")
+    left_cond = strike * ones(Mt + 1, 1) .* exp(-r0 * (tau - t'));
+    right_cond = zeros(Mt + 1, 1);
+    term_cond = max(strike - x, 0); 
+  elseif strcmp(payoff_type,"call")
+    term_cond = max(x - strike, 0);
+    left_cond = zeros(Mt + 1, 1);
+    right_cond = (xmax - strike) * ones(Mt + 1, 1);
+  else
+    left_cond = strike * ones(Mt + 1, 1) .* exp(-r0 * (tau - t'));
+    right_cond = zeros(Mt + 1, 1);
+    term_cond = max(x - strike, 0);   
+  endif
+
+  if isempty(monitoring_dates)
+    right_cond = zeros(Mt + 1, 1);
+    left_cond = zeros(Mt + 1, 1);
+  endif
+
+  left_bound = Lbarrier * monitoring_ind + xmin * !monitoring_ind;
+  right_bound = Ubarrier * monitoring_ind + xmax * !monitoring_ind;
+ 
+  result = calc_price_greeks (r0, r1, sigma, term_cond, left_cond, right_cond, \
+			      left_bound, right_bound, xmin, xmax, tau, Mx, Mt, \
+			      S0);
+  
+%OSO/PPO adjustment to code
+endfunction
+
+function [result] = KIKO(F_bid, F_ask, Lbarrier, Ubarrier, strike,
+			 monitoring_dates,
+			 issue_date,expire_date,PPO,OSO,price_type, \
+			 payoff_type)
+
+  dbl_result = DoubleKO(F_bid, F_ask, Lbarrier, Ubarrier, strike,
+			monitoring_dates,
+			issue_date,expire_date,PPO,OSO,price_type, \
+			payoff_type);
+
+  if !isempty(monitoring_dates)
+    result = dbl_result - DM_out(F_bid, F_ask, Ubarrier, strike,
+			monitoring_dates,
+			issue_date,expire_date,PPO,OSO,price_type, \
+			"up", payoff_type);
+  else
+    result = dbl_result - uoamcall(F_bid,F_ask,Ubarrier,strike,issue_date,expire_date,PPO,OSO,price_type);
+  endif 
+
+endfunction
+
+
+function [result] = Window_out(F_bid, F_ask, barrier, strike,
+			   monitoring_dates,
+			   issue_date,expire_date,PPO,OSO,price_type, \
+                           barrier_type, payoff_type)
+  %% PDE grid globals
+  global Mx;
+  global Mt;
+
+  if (price_type == "bid")
+    F = F_bid;
+  else
+    F = F_ask;
+  endif
+  
+  [tau, tau_mod, DF_dG, DF_d, DF_f] = prepare_data(issue_date, expire_date, OSO, PPO, price_type);
+  % monitoring dates adjustment
+  [t, monitoring_ind] = adj_time_grid (tau, Mt, issue_date, expire_date, monitoring_dates);
+  Mt = length(t) - 1;
+  %% parameters of BS equation 
+  r0 = -log(DF_d)/tau;
+  r1 = -log(DF_f)/tau;
+  S0 = F * DF_d / DF_f;
+  xmin = 0;
+  xmax = set_xmax(S0, tau, vol(0, S0, strike, tau));
+  x = linspace(xmin, xmax, Mx + 1);
+  dx = (xmax - xmin)/Mx;
+  dt = tau / Mt;
+  sigma = vol(t, x, strike, tau);
+
+  if strcmp(payoff_type,"put")
+    left_cond = strike * ones(Mt + 1, 1) .* exp(-r0 * (tau - t'));
+    right_cond = zeros(Mt + 1, 1);
+    term_cond = max(strike - x, 0); 
+  elseif strcmp(payoff_type,"call")
+    term_cond = max(x - strike, 0);
+    left_cond = zeros(Mt + 1, 1);
+    right_cond = (xmax - strike) * ones(Mt + 1, 1);
+  else
+    left_cond = strike * ones(Mt + 1, 1) .* exp(-r0 * (tau - t'));
+    right_cond = zeros(Mt + 1, 1);
+    term_cond = max(x - strike, 0);   
+  endif
+
+  if strcmp(barrier_type,"up") 
+    left_bound =  zeros(Mt + 1, 1);
+    right_bound = barrier * monitoring_ind + xmax * !monitoring_ind;
+  elseif strcmp(barrier_type, "down")
+    right_bound =  xmax * ones(Mt + 1, 1);
+    left_bound = barrier * monitoring_ind;
+  else
+    left_bound =  zeros(Mt + 1, 1);
+    right_bound = xmax * ones(Mt + 1, 1);
+  endif
+ 
+ 
+  result = calc_price_greeks (r0, r1, sigma, term_cond, left_cond, right_cond, \
+			      left_bound, right_bound, xmin, xmax, tau, Mx, Mt, \
+			      S0);
+  
+%OSO/PPO adjustment to code
+endfunction
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                 
 %%% Auxilary functions  
@@ -191,6 +346,12 @@ function [t_grid, monitoring_ind] = adj_time_grid (T, Mt, issue_date, expire_dat
  
  global DCC;
 
+ if isempty(monitoring_dates) 
+   t_grid = linspace(0, T, Mt + 1);
+   monitoring_ind = ones(1, Mt + 1);
+   return;
+ endif
+
  monitoring_t = zeros(size(monitoring_dates));
 
  for i = 1:length(monitoring_dates)
@@ -201,9 +362,9 @@ function [t_grid, monitoring_ind] = adj_time_grid (T, Mt, issue_date, expire_dat
  Mt_adj = round(MF_precision * T / gcd(round(MF_precision * monitoring_t)(2), round(MF_precision * monitoring_t)(3)));
  Mt = ceil(Mt / Mt_adj) * Mt_adj;
  dt = T / Mt;
+
  monitoring_k = round(monitoring_t / dt) + 1;
- monitoring_ind = zeros(Mt + 1, 1); 
- 
+ monitoring_ind = zeros(Mt + 1, 1);  
  monitoring_ind(monitoring_k) = 1;
  t_grid = linspace(0, T, Mt + 1);
  
