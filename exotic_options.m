@@ -204,43 +204,51 @@ function [result] = Window_out(F_bid, F_ask, barrier, strike,
   [tau3, tau_mod3, DF_dG3, DF_d3, DF_f3] = prepare_data(issue_date, window_start_date, OSO, 0, price_type);
   [tau, tau_mod, DF_dG, DF_d, DF_f] = prepare_data(issue_date, expire_date, OSO, PPO, price_type);
 
-
-  % monitoring dates adjustment
-
   S0 = F * DF_d / DF_f;
   
   %% parameters of BS equation 
   % 1st step
-  Mt = ceil(Mt_tot * tau1 / tau);
-  [t, monitoring_ind] = adj_time_grid (tau1, Mt, window_end_date, expire_date, monitoring_dates);
-  Mt = length(t) - 1;
-  r0 = -log(DF_d1)/tau1;
-  r1 = -log(DF_f1)/tau1;
+
   xmin1 = 0;
   xmax1 = set_xmax(S0, tau, vol(0, S0, strike, tau));
-  x = linspace(xmin1, xmax1, Mx + 1);
+  x1 = linspace(xmin1, xmax1, Mx + 1);
+  x= x1;
   dx = (xmax1 - xmin1)/Mx;
-  dt = tau1 / Mt;
-  sigma = vol(t, x, strike, tau1);
-
+  
   if strcmp(payoff_type,"put")
-    left_cond = strike * ones(Mt + 1, 1) .* exp(-r0 * (tau - t'));
-    right_cond = zeros(Mt + 1, 1);
     term_cond = max(strike - x, 0); 
   elseif strcmp(payoff_type,"call")
     term_cond = max(x - strike, 0);
-    left_cond = zeros(Mt + 1, 1);
-    right_cond = (xmax1 - strike) * ones(Mt + 1, 1);
   else
 	error("Invalid payoff type");
   endif
+  #keyboard;
+  if (tau1 > 0)
+	Mt = ceil(Mt_tot * tau1 / tau);
+	[t, monitoring_ind] = adj_time_grid (tau1, Mt, window_end_date, expire_date, monitoring_dates);
+	Mt = length(t) - 1;
+	r0 = -log(DF_d1)/tau1;
+	r1 = -log(DF_f1)/tau1;
+	dt = tau1 / Mt;
+	sigma = vol(t, x, strike, tau1);
 
-  left_bound =  zeros(Mt + 1, 1);
-  right_bound = xmax1 * ones(Mt + 1, 1);
+	if strcmp(payoff_type,"put")
+      left_cond = strike * ones(Mt + 1, 1) .* exp(-r0 * (tau - t'));
+      right_cond = zeros(Mt + 1, 1);
+  	elseif strcmp(payoff_type,"call")
+      left_cond = zeros(Mt + 1, 1);
+      right_cond = (xmax1 - strike) * ones(Mt + 1, 1);
+	else
+	  error("Invalid payoff type");
+	endif
 
-  term_cond = solve_BS_PDE (r0, r1, sigma, term_cond, left_cond, right_cond, \
-					left_bound, right_bound, xmin1, xmax1, tau1, Mx, Mt);
-
+	left_bound =  zeros(Mt + 1, 1);
+	right_bound = xmax1 * ones(Mt + 1, 1);
+	
+	term_cond = solve_BS_PDE (r0, r1, sigma, term_cond, left_cond, right_cond, \
+							  left_bound, right_bound, xmin1, xmax1, tau1, Mx, Mt);
+  endif
+  #keyboard("Step2");
   % 2nd step
   Mt = ceil(Mt_tot * tau2 / tau);
   [t, monitoring_ind] = adj_time_grid (tau2, Mt, window_start_date, window_end_date, monitoring_dates);
@@ -258,7 +266,7 @@ function [result] = Window_out(F_bid, F_ask, barrier, strike,
     error("Invalid barrier type");
   endif
   
-  x = x(x > xmin - dx/2 & x < xmax + dx/2);
+  x = x(x1 >= xmin  & x1 <= xmax);
   dt = tau2 / Mt;
   sigma = vol(t, x, strike, tau2);
 
@@ -283,44 +291,87 @@ function [result] = Window_out(F_bid, F_ask, barrier, strike,
   else
     error("Invalid barrier type");
   endif
-  term_cond = term_cond(x > xmin - dx/2 & x < xmax + dx/2);
-  term_cond = solve_BS_PDE (r0, r1, sigma, term_cond, left_cond, right_cond, \
-					left_bound, right_bound, xmin, xmax, tau2, \
-					length(term_cond) - 1, Mt);
- 
-  % 3rd step
-  Mt = ceil(Mt_tot * tau3 / tau);
-  [t, monitoring_ind] = adj_time_grid (tau3, Mt, issue_date, window_start_date, monitoring_dates);
-  Mt = length(t) - 1;
-  r0 = -log(DF_d3)/tau3;
-  r1 = -log(DF_f3)/tau3;
-  x = linspace(xmin1, xmax1, Mx + 1);
-
-  dt = tau3 / Mt;
-  sigma = vol(t, x, strike, tau3);
-
-  if strcmp(payoff_type,"put")
-    left_cond = strike * ones(Mt + 1, 1) .* exp(-r0 * (tau - t'));
-    right_cond = zeros(Mt + 1, 1);
-  elseif strcmp(payoff_type,"call")
-    left_cond = zeros(Mt + 1, 1);
-    right_cond = (xmax - strike) * ones(Mt + 1, 1);
-  else
-	error("Invalid payoff type");
-  endif
-
-  left_bound =  zeros(Mt + 1, 1);
-  right_bound = xmax1 * ones(Mt + 1, 1);
-
-  term_cond1 = zeros(1, Mx + 1); 
-  term_cond1(x > xmin - dx/2 & x < xmax + dx/2) = term_cond;
-  term_cond = term_cond1;
+  #keyboard;
+  term_cond = term_cond(x1>= xmin  & x1 <= xmax);
   #keyboard;
   term_cond = solve_BS_PDE (r0, r1, sigma, term_cond, left_cond, right_cond, \
-					left_bound, right_bound, xmin1, xmax1, tau3, Mx, Mt);
+					left_bound, right_bound, xmin, xmax, tau2, \
+					length(term_cond) - 1, Mt, 2);
+ #keyboard;
+  % 3rd step
+  if (tau3 > 0)
+	Mt = ceil(Mt_tot * tau3 / tau);
+	[t, monitoring_ind] = adj_time_grid (tau3, Mt, issue_date, window_start_date, monitoring_dates);
+	Mt = length(t) - 1;
+	r0 = -log(DF_d3)/tau3;
+	r1 = -log(DF_f3)/tau3;
+	x = linspace(xmin1, xmax1, Mx + 1);
 
+	dt = tau3 / Mt;
+	sigma = vol(t, x, strike, tau3);
 
-  result(1) = interp1(x, term_cond, S0);
+	if strcmp(payoff_type,"put")
+      left_cond = strike * ones(Mt + 1, 1) .* exp(-r0 * (tau - t'));
+      right_cond = zeros(Mt + 1, 1);
+	elseif strcmp(payoff_type,"call")
+      left_cond = zeros(Mt + 1, 1);
+      right_cond = (xmax - strike) * ones(Mt + 1, 1);
+	else
+	  error("Invalid payoff type");
+	endif
+
+	left_bound =  zeros(Mt + 1, 1);
+	right_bound = xmax1 * ones(Mt + 1, 1);
+
+	term_cond1 = zeros(1, Mx + 1); 
+	term_cond1(x >= xmin & x <= xmax) = term_cond(1,:);
+	term_cond = term_cond1;
+	#keyboard;
+	term_cond = solve_BS_PDE (r0, r1, sigma, term_cond, left_cond, right_cond, \
+							  left_bound, right_bound, xmin1, xmax1, tau3, Mx, Mt);
+  endif
+  
+  V = term_cond;
+  
+  %% Price
+  result(1) = interp1(x, V(1, :), S0);
+  
+  %% Greeks
+
+  %% spot delta
+  result(2) = \ 
+  ( interp1(x, V(1, :), S0 + dx) \ 
+	-interp1(x, V(1, :), S0 - dx) ) / (2 * dx);
+  
+  %% forward delta
+  result(3) = \ 
+  ( interp1(x, V(1, :), (F + dx) * DF_d / DF_f) \ 
+	-interp1(x, V(1, :), (F - dx) * DF_d / DF_f) ) / (2 * dx);
+  
+  %% spot gamma
+  result(4) = \ 
+  ( interp1(x, V(1, :), S0 + dx) \ 
+	-2 * interp1(x, V(1, :), S0) \
+	+interp1(x, V(1, :), S0 - dx)) / dx^2;
+  
+  %% forward gamma
+  result(5) = \ 
+  ( interp1(x, V(1, :), (F + dx) * DF_d / DF_f) \ 
+	-2 * interp1(x, V(1, :), S0) \
+	+interp1(x, V(1, :), (F - dx) * DF_d / DF_f) ) / dx^2;
+  
+  %% theta
+  result(6) = (interp1(x, V(2, :), S0) - result(1))/ dt ;
+  result(7) = -666;
+  
+  %% vega
+  #V1 = solve_BS_PDE (r0, r1, sigma + dsigma, term_cond, left_cond, right_cond, left_bound, right_bound, xmin, xmax, T, Mx, Mt);
+  #V2 = solve_BS_PDE (r0, r1, sigma - dsigma, term_cond, left_cond, right_cond, left_bound, right_bound, xmin, xmax, T, Mx, Mt);
+  
+  #res(7) = \ 
+  #( interp1(x, V1, S0) \ 
+#	-interp1(x, V2, S0) ) / (2 * dsigma);
+ # result(1) = interp1(x, term_cond, S0);
 
 ##  result = calc_price_greeks (r0, r1, sigma, term_cond, left_cond, right_cond, \
 ##			      left_bound, right_bound, xmin, xmax, tau, Mx, Mt, \
@@ -409,7 +460,7 @@ function res = solve_BS_PDE (r0, r1, sigma, term_cond, left_cond, \
 	   V = V .* (x > left_bound(k) - dx / 2 & x < right_bound(k) + dx/2);
 	
 	   res(min(k, res_t_size),:) = V;
-   
+	   #keyboard;
 	endfor
 
 endfunction

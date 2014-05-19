@@ -18,13 +18,13 @@ dsigma = 0.001;
 
 S0 = 100;
 
-barrier = 120;
+barrier = 90;
 strike = 100;
 MF = 1;
 issue_date = '25-Aug-2009';
 expire_date = '06-Nov-2009';
-window_start_date = '27-Aug-2009';
-window_end_date = '04-Nov-2009';
+window_start_date = '25-Aug-2009';
+window_end_date = '26-Aug-2009';
  
 PPO = 0;
 OSO = 0;
@@ -55,6 +55,5 @@ until day_diff(date, expire_date, 'ACT') <= 0;
  #     issue_date,expire_date,PPO,OSO,type, "up", "call")
 Window_out(F_bid,F_ask,barrier,strike, [], \
        issue_date, window_start_date, window_end_date, \
-	   expire_date,PPO,OSO,type, "up", "call")
-uoamcall(F_bid,F_ask,barrier,strike,issue_date,expire_date,PPO,OSO,type)(1)
-call(F_bid,F_ask,strike,issue_date,expire_date,PPO,OSO,type)(1)
+	   expire_date,PPO,OSO,type, "down", "put")
+put(F_bid,F_ask,strike,issue_date,expire_date,PPO,OSO,type)(1)
