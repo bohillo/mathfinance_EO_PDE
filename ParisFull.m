@@ -96,7 +96,7 @@ x = exp(x);
 V1=lastu(:,NoTau+1);
 endfunction
 
-function [res] = CalculatePriceGreeksParisian(F_bid, F_ask, barrier,day_hat, strike,
+function [res] = CalculatePriceGreeksParisianOut(F_bid, F_ask, barrier,day_hat, strike,
 			   issue_date,expire_date,PPO,OSO,price_type, \
                            barrier_type, payoff_type,isAsian)
   
@@ -143,4 +143,18 @@ global dsigma;
                            barrier_type, payoff_type,isAsian,1);
   res(7) = ( res(1) - interp1(x2, V12, S02) ) / (2 * dsigma);
 
+endfunction
+
+function [res] = CalculatePriceGreeksParisianIn(F_bid, F_ask, barrier,day_hat, strike,
+			   issue_date,expire_date,PPO,OSO,price_type, \
+                           barrier_type, payoff_type,isAsian)
+		 resOut = CalculatePriceGreeksParisianIn(F_bid, F_ask, barrier,day_hat, strike,
+			   issue_date,expire_date,PPO,OSO,price_type, \
+                           barrier_type, payoff_type,isAsian);
+		 if strcmp(payoff_type,"call")
+		   resBS = call(F_bid,F_ask,strike,issue_date,expire_date,PPO,OSO,price_type);
+		 else
+			resBS = put(F_bid,F_ask,strike,issue_date,expire_date,PPO,OSO,price_type);
+		 endif 
+		   res = resBS - resOut;
 endfunction
