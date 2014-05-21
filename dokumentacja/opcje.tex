@@ -32,7 +32,9 @@ Niech $0 \leq \tau_1 < \tau_2 \leq T$ bêd± punktami odpowiednio pocz±tku i koñca
 
 \end{itemize}
 \subsection{Opcje paryskie}
-Jednobarierowe opcje paryskie s± kontraktami, w których w³asno¶æ \emph{in} lub \emph{out} jest aktywowana nie w momencie dotkniêcia bariery lecz po pewnym ustalonym z góry czasie przebywania ceny instrumentu bazowego nad lub pod barier±. Opcje typu paryskiego dziel± siê na dwie klasy:
+Jednobarierowe opcje paryskie s± kontraktami, w których w³asno¶æ \emph{in} lub \emph{out} jest aktywowana nie w momencie dotkniêcia bariery lecz po pewnym ustalonym z góry czasie przebywania ceny instrumentu bazowego nad lub pod barier± (czas barierowy). Opcje typu paryskiego dziel± siê na dwie klasy:
 \begin{itemize}
-\item  \emph{Parisian} - 
+\item  \emph{Parisian} - W momencie, gdy cena akcji jest równa barierze, czas barierowy jest zerowany.
+\item  \emph{Parasian} - Czas barierowy jest sum± wszyskich przebywañ poza barier±.
 \end{itemize}
+Wyp³ata z opcji jest równa wyp³acie z opcji europejskiej po spe³nieniu warunków zale¿nych od typu bariery (analogicznie do tradycyjnych opcji barierowych) i zero w przeciwnym przypadku.
