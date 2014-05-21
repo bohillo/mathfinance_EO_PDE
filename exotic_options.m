@@ -67,8 +67,8 @@ function [result] = DM_out(F_bid, F_ask, barrier, strike,
   result = calc_price_greeks (r0, r1, sigma, term_cond, left_cond, right_cond, \
 			      left_bound, right_bound, xmin, xmax, tau, Mx, Mt, \
 			      S0);
-  
-%OSO/PPO adjustment to code
+
+  result(1) = result(1) * DF_dG / DF_d;
 endfunction
 
 function [result] = DM_in(F_bid, F_ask, barrier, strike,
@@ -159,7 +159,7 @@ function [result] = DoubleKO(F_bid, F_ask, Lbarrier, Ubarrier, strike,
 			      left_bound, right_bound, xmin, xmax, tau, Mx, Mt, \
 			      S0);
   
-%OSO/PPO adjustment to code
+  result(1) = result(1) * DF_dG / DF_d;
 endfunction
 
 function [result] = KIKO(F_bid, F_ask, Lbarrier, Ubarrier, strike,
@@ -385,7 +385,7 @@ function [result] = Window_out(F_bid, F_ask, barrier, strike,
   ( interp1(x, V_vega, S0) \ 
 	-interp1(x, V(1,:), S0) ) /  dsigma;
   
-%OSO/PPO adjustment to code
+  result(1) = result(1) * DF_dG / DF_d;
 endfunction
 
 function [result] = Window_in(F_bid, F_ask, barrier, strike,
@@ -587,7 +587,7 @@ function [result] = Window_DoubleKO(F_bid, F_ask, Lbarrier, Ubarrier, strike,
   ( interp1(x, V_vega, S0) \ 
 	-interp1(x, V(1,:), S0) ) /  dsigma;
   
-%OSO/PPO adjustment to code
+  result(1) = result(1) * DF_dG / DF_d;
 endfunction
 
 function [result] = Window_KIKO(F_bid, F_ask, Lbarrier, Ubarrier, strike,
