@@ -3,7 +3,7 @@ DOM_data_in;
 DOM_dis_factor;
 FOR_data_in;
 FOR_dis_factor;
-exotic_options;
+exotic_options_PDE;
 format long;
 global DCC;
 global Mx;
