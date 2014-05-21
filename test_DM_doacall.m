@@ -1,4 +1,3 @@
-
 addpath("input");
 DOM_data_in;
 DOM_dis_factor;
@@ -18,12 +17,14 @@ dsigma = 0.001;
 
 S0 = 100;
 
-barrier = 110;
+barrier = 90;
 strike = 100;
 MF = 1;
 issue_date = '25-Aug-2009';
 expire_date = '06-Nov-2009';
-
+window_start_date = '25-Aug-2009';
+window_end_date = '06-Nov-2009';
+ 
 PPO = 0;
 OSO = 0;
 type = 'bid';
@@ -37,17 +38,24 @@ MF = 1;
 i = 1;
 date = issue_date;
 
-
 do 
   monitoring_dates(i) = date;
   date = day_shift(date, FC_DOM, 1);
   i += 1;
 until day_diff(date, expire_date, 'ACT') <= 0;
 
+#DM_out(F_bid,F_ask,barrier,strike, monitoring_dates, \
+ #      issue_date,expire_date,PPO,OSO,type, "up", "call")
+
+#DM_in(F_bid,F_ask,barrier,strike, monitoring_dates, \
+ #     issue_date,expire_date,PPO,OSO,type, "up", "call")
+
+#DM_out(F_bid,F_ask,85,strike, [], \
+#       issue_date,expire_date,PPO,OSO,type, "down", "put")
+
+Window_in(F_bid,F_ask,101, strike, \
+       issue_date, window_start_date, window_end_date, \
+	   expire_date, PPO, OSO, type, "up", "put")
 
 
-DM_out(F_bid,F_ask,barrier,strike, monitoring_dates, \
-       issue_date,expire_date,PPO,OSO,type, "up", "call")
-
-DM_in(F_bid,F_ask,barrier,strike, monitoring_dates, \
-      issue_date,expire_date,PPO,OSO,type, "up", "call")
+put(F_bid,F_ask,strike,issue_date,expire_date,PPO,OSO,type)

@@ -1,7 +1,6 @@
 Rzeczy do zrobienia:
 
-* funkcja solve_BS_PDE. Status: zrobione i przetestowane dla warunków z monitorowania dyskretnego i Dbl KO. Dla window barrier są pewne różnice, czemu?
-* funkcje do wyceny poszczególnych typów opcji, tj. do wstawienia odpowiednich warunków do funkcji solve_BS_PDE i wyliczenia ceny i greeks. Trzeba się zastanowić, jak bardzo ogólne mają być te funkcje 
-  - zrobiony pilot: DM_doacall: dorobić OSO/PPO adjustment i greeks
-* Pomyśleć jak powinniśmy liczyć greeks i czy będą z tym jakieś problemy
-* ogarnąć opcje paryskie
+* paryskie
+* dokumentacja
+* poprawić adj_time_grid?
+* upiększyć kod, zmienić nazwy funkcji i ew. połączyć je
