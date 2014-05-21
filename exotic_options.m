@@ -5,10 +5,6 @@ wroblewski_ap_new;
 %%% Functions for option valuation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function result = ImpVol(strike,issue_date,expire_date)
-	 result =.2; ## TBR
-endfunction
-
 function [result] = DM_out(F_bid, F_ask, barrier, strike,
 			   monitoring_dates,
 			   issue_date,expire_date,PPO,OSO,price_type, \
@@ -184,9 +180,9 @@ function [result] = KIKO(F_bid, F_ask, Lbarrier, Ubarrier, strike,
 endfunction
 
 
-function [result] = Window_out(F_bid, F_ask, barrier, strike,
-			   monitoring_dates, issue_date, window_start_date, window_end_date, \
-			   expire_date,PPO,OSO,price_type, barrier_type, payoff_type)
+function [result] = Window_out(F_bid, F_ask, barrier, strike, \
+			       issue_date, window_start_date, window_end_date, \
+			       expire_date,PPO,OSO,price_type, barrier_type, payoff_type)
   %% PDE grid globals
   global Mx;
   global Mt;
@@ -230,8 +226,7 @@ function [result] = Window_out(F_bid, F_ask, barrier, strike,
 
   if (tau1 > 0)
 	Mt = ceil(Mt_tot * tau1 / tau);
-	[t, monitoring_ind] = adj_time_grid (tau1, Mt, window_end_date, expire_date, monitoring_dates);
-	Mt = length(t) - 1;
+	t = linspace(0, tau1, Mt + 1);
 	r0 = -log(DF_d1)/tau1;
 	r1 = -log(DF_f1)/tau1;
 	dt = tau1 / Mt;
@@ -259,8 +254,7 @@ function [result] = Window_out(F_bid, F_ask, barrier, strike,
 
   % 2nd step
   Mt = ceil(Mt_tot * tau2 / tau);
-  [t, monitoring_ind] = adj_time_grid (tau2, Mt, window_start_date, window_end_date, monitoring_dates);
-  Mt = length(t) - 1;
+  t = linspace(0, tau2, Mt + 1);
   r0 = -log(DF_d2)/tau2;
   r1 = -log(DF_f2)/tau2;
   xmin = xmin1;
@@ -313,8 +307,7 @@ function [result] = Window_out(F_bid, F_ask, barrier, strike,
   % 3rd step
   if (tau3 > 0)
 	Mt = ceil(Mt_tot * tau3 / tau);
-	[t, monitoring_ind] = adj_time_grid (tau3, Mt, issue_date, window_start_date, monitoring_dates);
-	Mt = length(t) - 1;
+	t = linspace(0, tau3, Mt + 1);
 	r0 = -log(DF_d3)/tau3;
 	r1 = -log(DF_f3)/tau3;
 	x = linspace(xmin1, xmax1, Mx + 1);
@@ -388,21 +381,19 @@ function [result] = Window_out(F_bid, F_ask, barrier, strike,
   result(1) = result(1) * DF_dG / DF_d;
 endfunction
 
-function [result] = Window_in(F_bid, F_ask, barrier, strike,
-			   monitoring_dates, issue_date, window_start_date, window_end_date, \
+function [result] = Window_in(F_bid, F_ask, barrier, strike, \
+			   issue_date, window_start_date, window_end_date, \
 			   expire_date,PPO,OSO,price_type, barrier_type, payoff_type)
 
  if strcmp(payoff_type, "call")
    result = \
    call(F_bid,F_ask,strike,issue_date,expire_date,PPO,OSO,price_type) - \
-   Window_out(F_bid, F_ask, barrier, strike,
-			   monitoring_dates, issue_date, window_start_date, window_end_date, \
+   Window_out(F_bid, F_ask, barrier, strike, issue_date, window_start_date, window_end_date, \
 			   expire_date,PPO,OSO,price_type, barrier_type, payoff_type);
  elseif strcmp(payoff_type, "put") 
    result = \
    put(F_bid,F_ask,strike,issue_date,expire_date,PPO,OSO,price_type) - \
-   Window_out(F_bid, F_ask, barrier, strike,
-			   monitoring_dates, issue_date, window_start_date, window_end_date, \
+   Window_out(F_bid, F_ask, barrier, strike, issue_date, window_start_date, window_end_date, \
 			   expire_date,PPO,OSO,price_type, barrier_type, payoff_type);
  else
 	error("Invalid payoff type");
@@ -410,9 +401,9 @@ function [result] = Window_in(F_bid, F_ask, barrier, strike,
 		 
 endfunction 
 
-function [result] = Window_DoubleKO(F_bid, F_ask, Lbarrier, Ubarrier, strike,
-			   monitoring_dates, issue_date, window_start_date, window_end_date, \
-			   expire_date,PPO,OSO,price_type, payoff_type)
+function [result] = Window_DoubleKO(F_bid, F_ask, Lbarrier, Ubarrier, strike,\
+				    issue_date, window_start_date, window_end_date, \
+				    expire_date,PPO,OSO,price_type, payoff_type)
   %% PDE grid globals
   global Mx;
   global Mt;
@@ -456,8 +447,7 @@ function [result] = Window_DoubleKO(F_bid, F_ask, Lbarrier, Ubarrier, strike,
 
   if (tau1 > 0)
 	Mt = ceil(Mt_tot * tau1 / tau);
-	[t, monitoring_ind] = adj_time_grid (tau1, Mt, window_end_date, expire_date, monitoring_dates);
-	Mt = length(t) - 1;
+	t = linspace(0, tau1, Mt + 1);
 	r0 = -log(DF_d1)/tau1;
 	r1 = -log(DF_f1)/tau1;
 	dt = tau1 / Mt;
@@ -485,8 +475,7 @@ function [result] = Window_DoubleKO(F_bid, F_ask, Lbarrier, Ubarrier, strike,
 
   % 2nd step
   Mt = ceil(Mt_tot * tau2 / tau);
-  [t, monitoring_ind] = adj_time_grid (tau2, Mt, window_start_date, window_end_date, monitoring_dates);
-  Mt = length(t) - 1;
+  t = linspace(0, tau2, Mt + 1);
   r0 = -log(DF_d2)/tau2;
   r1 = -log(DF_f2)/tau2;
   xmin = Lbarrier;
@@ -515,8 +504,7 @@ function [result] = Window_DoubleKO(F_bid, F_ask, Lbarrier, Ubarrier, strike,
   % 3rd step
   if (tau3 > 0)
 	Mt = ceil(Mt_tot * tau3 / tau);
-	[t, monitoring_ind] = adj_time_grid (tau3, Mt, issue_date, window_start_date, monitoring_dates);
-	Mt = length(t) - 1;
+	t = linspace(0, tau3, Mt + 1);
 	r0 = -log(DF_d3)/tau3;
 	r1 = -log(DF_f3)/tau3;
 	x = linspace(xmin1, xmax1, Mx + 1);
@@ -590,24 +578,17 @@ function [result] = Window_DoubleKO(F_bid, F_ask, Lbarrier, Ubarrier, strike,
   result(1) = result(1) * DF_dG / DF_d;
 endfunction
 
-function [result] = Window_KIKO(F_bid, F_ask, Lbarrier, Ubarrier, strike,
-			 monitoring_dates,
+function [result] = Window_KIKO(F_bid, F_ask, Lbarrier, Ubarrier, strike, \ 
 			 issue_date, window_start_date, window_end_date, expire_date,PPO,OSO,price_type, \
 			 payoff_type)
 
-  dbl_result = Window_DoubleKO(F_bid, F_ask, Lbarrier, Ubarrier, strike,
-			monitoring_dates,
+  dbl_result = Window_DoubleKO(F_bid, F_ask, Lbarrier, Ubarrier, strike, \
 			issue_date, window_start_date, window_end_date, expire_date,PPO,OSO,price_type, \
 			payoff_type);
 
-  if !isempty(monitoring_dates)
-    result = dbl_result - Window_out(F_bid, F_ask, Ubarrier, strike,
-			monitoring_dates,
+    result = dbl_result - Window_out(F_bid, F_ask, Ubarrier, strike, \
 			issue_date, window_start_date, window_end_date, expire_date,PPO,OSO,price_type, \
 			"up", payoff_type);
-  else
-    result = dbl_result - uoamcall(F_bid,F_ask,Ubarrier,strike,issue_date,expire_date,PPO,OSO,price_type);
-  endif 
 
 endfunction
 
@@ -615,6 +596,13 @@ endfunction
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                 
 %%% Auxilary functions  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+function result = ImpVol(strike,issue_date,expire_date)
+  global DCC;
+  result = vol(0, strike, strike, year_frac(issue_date, expire_date, DCC) );
+endfunction
+
                      
 function [tau, tau_mod, DF_dG, DF_d, DF_f] = prepare_data(issue_date, expire_date, OSO, PPO, type)  
    %% Market globals
@@ -624,6 +612,7 @@ function [tau, tau_mod, DF_dG, DF_d, DF_f] = prepare_data(issue_date, expire_dat
    global DSQ_Ask;
    global DSB_Bid;
    global DSB_Ask;
+
    tau = year_frac(issue_date,expire_date,DCC);
 
    DF_d_bid = DF(issue_date,{expire_date},DSQ_Bid)(1);
@@ -689,7 +678,6 @@ function res = solve_BS_PDE (r0, r1, sigma, term_cond, left_cond, \
 	   V = V .* (x > left_bound(k) - dx / 2 & x < right_bound(k) + dx/2);
 	
 	   res(min(k, res_t_size),:) = V;
-	   #keyboard;
 	endfor
 
 endfunction
@@ -697,7 +685,6 @@ endfunction
 
 function result_vol = vol (t, S, K, T)
   result_vol = repmat(0.2, length(S), length(t));
-#ImpVol(strike,issue_date,expire_date);
 endfunction
 
 function xmax = set_xmax(S0, T, sigma) 
