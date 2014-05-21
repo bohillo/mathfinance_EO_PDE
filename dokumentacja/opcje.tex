@@ -4,7 +4,7 @@ monitorowan± barier±, opcji z podwójn± barier± (monitorowan± w sposób
 zarówno dyskretny jak i ci±g³y), opcji barierowych z barierami
 monitorowanymi w oknie czasowym, oraz opcji paryskich.
 
-Poni¿ej wymieniono poszczególne typy kontraktów, dla których zaimplementowano algorytm wyceny. Niech $T$ bêdzie czasem zapadalno¶ci opcji, $K$ cen± wykonania, $U$ i $L$ odpowiednio barier± górn± i doln±, oraz $S_t$ cen± instrumentu bazowego w chwili $t$. Ponadto niech $f$ bêdzie funkcj± wyp³aty dla opcji waniliowej tj. $f(x) = (x - K) ^{+}
+Poni¿ej wymieniono poszczególne typy kontraktów, dla których zaimplementowano algorytm wyceny. Niech $T$ bêdzie czasem zapadalno¶ci opcji, $K$ cen± wykonania, $U$ i $L$ odpowiednio barier± górn± i doln±, oraz $S_t$ cen± instrumentu bazowego w chwili $t$. Ponadto niech $f$ bêdzie funkcj± wyp³aty dla opcji waniliowej tj. $f(x) = (x - K) ^{+}$ dla opcji \emph{call} i $f(x) = (K - x) ^{+}$ dla opcji \emph{put}.
 
 \subsection{Opcje z barier± monitorowan± dyskretnie}
 Niech $0 \leq T_1 < T_2 < \ldots < T_L \leq T$ bêd± punktami monitorowania bariery. 
@@ -20,10 +20,19 @@ Niech $0 \leq T_1 < T_2 < \ldots < T_L \leq T$ bêd± punktami monitorowania barie
 \end{itemize}
 
 \subsection{Opcje z barier± monitorowan± w oknie czasowym}
+Niech $0 \leq \tau_1 < \tau_2 \leq T$ bêd± punktami odpowiednio pocz±tku i koñca okna, którym monitorowana jest bariera. 
+\begin{itemize}
+\item \emph{Up and out} z wyp³at± $X = f(S_T) \cdot \mathbbm{1}_{\{\forall_{ t \in \left[ \tau_1, \tau_2 \right] } S_t < U \}}$
+\item \emph{Up and in} z wyp³at± $X = f(S_T) \cdot \mathbbm{1}_{\{\exists_{ t \in \left[ \tau_1, \tau_2 \right] } S_t \geq U \}}$
+\item \emph{Down and out} z wyp³at± $X = f(S_T) \cdot \mathbbm{1}_{\{\forall_{ t \in \left[ \tau_1, \tau_2 \right] } S_t > L \}}$
+\item \emph{Down and in} z wyp³at± $X = f(S_T) \cdot \mathbbm{1}_{\{\exists_{ t \in \left[ \tau_1, \tau_2 \right] } S_t \leq L \}}$
+\item \emph{Double Knock-out} z wyp³at± $X = f(S_T) \cdot \mathbbm{1}_{\{\forall_{ t \in \left[ \tau_1, \tau_2 \right] } L < S_t  < U \}}$
+\item \emph{Knock-in Knock-out} z wyp³at± $X = f(S_T) \cdot \left( \mathbbm{1}_{\{\exists_{ t \in \left[ \tau_1, \tau_2 \right] } S_t \leq L \} \wedge \forall_{ t \in \left[ \tau_1, \tau_2 \right] } S_t < U \}}\right)$
 
+
+\end{itemize}
 \subsection{Opcje paryskie}
-
-
-
-
-
+Jednobarierowe opcje paryskie s± kontraktami, w których w³asno¶æ \emph{in} lub \emph{out} jest aktywowana nie w momencie dotkniêcia bariery lecz po pewnym ustalonym z góry czasie przebywania ceny instrumentu bazowego nad lub pod barier±. Opcje typu paryskiego dziel± siê na dwie klasy:
+\begin{itemize}
+\item  \emph{Parisian} - 
+\end{itemize}
