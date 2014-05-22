@@ -1,1 +1,30 @@
 \section{Dokumentacja funkcji}
+Wszystkie funkcje u¿ywane do wyceny opcji zwracaj± 7-elementowy wektor zawieraj±cy na kolejnych pozycjach odpowiednio cenê opcji, deltê spot, deltê forward, gammê spot, gammê forward, thetê oraz vegê. Funkcje przyjmuj± nastêpuj±ce argumenty:
+
+\begin{itemize}
+\item F\_bid - kurs forward bid
+\item F\_bid - kurs forward ask
+\item barrier - wysoko¶æ bariery (w przypadku opcji jednobarierowych, wyra¿ona w walucie kwotowania)
+\item Lbarrier - wysoko¶æ dolnej bariery (w przypadku opcji dwubarierowych, wyra¿ona w walucie kwotowania)
+\item Ubarrier - wysoko¶æ górnej bariery (w przypadku opcji dwubarierowych, wyra¿ona w walucie kwotowania)
+\item strike - kurs wykonania opcji
+\item issue\_date - data zawarcia kontraktu (np. '21-May-2014')
+\item expire\_date - data zapadalno¶ci kontraktu (np. '21-May-2014') 
+\item PPO - liczba dni roboczych od daty zawarcia kontraktu do dnia zap³aty premi opcyjnej (\emph{Premium Payment Offset})
+\item OSO - liczba dni roboczych od daty zapadalno¶ci opcji do dnia rozliczenia kontraktu (\emph{Option Settlement Offset})
+\item monitoring\_dates - wektor zawieraj±cy daty monitorowania barier w kolejno¶ci chronologicznej
+\item price\_type - typ obliczanej ceny (poprawne warto¶ci: \emph{bid}, \emph{ask})
+\item barrier\_type - typ bariery (w przypadku opcji jednobarierowych, poprawne warto¶ci: \emph{up}, \emph{down})
+\item payoff\_type - typ opcji (poprawne warto¶ci: \emph{put}, \emph{call})
+\item window\_start\_date - data pocz±tku okna czasowego, w którym monitorowane s± bariery
+\item window\_end\_date - data koñca okna czasowego, w którym monitorowane s± bariery
+\item day\_hat - czas przebywania poza barier± konieczny do aktywacji bariery (w przypadku opcji paryskich, wyra¿ony w dniach)
+\item isAsian - parametr okre¶laj±cy typ opcji paryskiej 0 - \emph{Parisian}, 1 - \emph{Parasian} (poprawne warto¶ci: 0, 1)
+\end{itemize}
+
+Dodatkowo poprzez zmienne globalne przekazywane s± parametry metody PDE
+\begin{itemize}
+\item Mt - liczba punktów siatki w wymiarze czasowym
+\item Mx - liczba punktów siatki w wymiarze przestrzennym
+\item dsigma - przyrost volatility opcji u¿ywany do obliczania wspó³czynnika \emph{vega}
+\end{itemize}
