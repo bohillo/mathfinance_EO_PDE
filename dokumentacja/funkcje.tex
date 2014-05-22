@@ -1,64 +1,95 @@
 \section{Dokumentacja funkcji}
-\subsection{Opis parametrÃ³w}
+
+Wszystkie funkcje u¿ywane do wyceny opcji zwracaj± 7-elementowy wektor zawieraj±cy na kolejnych pozycjach odpowiednio cenê opcji, deltê spot, deltê forward, gammê spot, gammê forward, thetê oraz vegê. Funkcje przyjmuj± nastêpuj±ce argumenty:
+
+\begin{itemize}
+\item F\_bid - kurs forward bid
+\item F\_bid - kurs forward ask
+\item barrier - wysoko¶æ bariery (w przypadku opcji jednobarierowych, wyra¿ona w walucie kwotowania)
+\item Lbarrier - wysoko¶æ dolnej bariery (w przypadku opcji dwubarierowych, wyra¿ona w walucie kwotowania)
+\item Ubarrier - wysoko¶æ górnej bariery (w przypadku opcji dwubarierowych, wyra¿ona w walucie kwotowania)
+\item strike - kurs wykonania opcji
+\item issue\_date - data zawarcia kontraktu (np. '21-May-2014')
+\item expire\_date - data zapadalno¶ci kontraktu (np. '21-May-2014') 
+\item PPO - liczba dni roboczych od daty zawarcia kontraktu do dnia zap³aty premi opcyjnej (\emph{Premium Payment Offset})
+\item OSO - liczba dni roboczych od daty zapadalno¶ci opcji do dnia rozliczenia kontraktu (\emph{Option Settlement Offset})
+\item monitoring\_dates - wektor zawieraj±cy daty monitorowania barier w kolejno¶ci chronologicznej
+\item price\_type - typ obliczanej ceny (poprawne warto¶ci: \emph{bid}, \emph{ask})
+\item barrier\_type - typ bariery (w przypadku opcji jednobarierowych, poprawne warto¶ci: \emph{up}, \emph{down})
+\item payoff\_type - typ opcji (poprawne warto¶ci: \emph{put}, \emph{call})
+\item window\_start\_date - data pocz±tku okna czasowego, w którym monitorowane s± bariery
+\item window\_end\_date - data koñca okna czasowego, w którym monitorowane s± bariery
+\item day\_hat - czas przebywania poza barier± konieczny do aktywacji bariery (w przypadku opcji paryskich, wyra¿ony w dniach)
+\item isAsian - parametr okre¶laj±cy typ opcji paryskiej 0 - \emph{Parisian}, 1 - \emph{Parasian} (poprawne warto¶ci: 0, 1)
+\end{itemize}
+
+Dodatkowo poprzez zmienne globalne przekazywane s± parametry metody PDE
+\begin{itemize}
+\item Mt - liczba punktów siatki w wymiarze czasowym
+\item Mx - liczba punktów siatki w wymiarze przestrzennym
+\item dsigma - przyrost volatility opcji u¿ywany do obliczania wspó³czynnika \emph{vega}
+\end{itemize}
+
 \subsection{Opis funkcji}
-W tym podrozdziale zostanÄ… przedstawione sygnatury funkcji sÅ‚uÅ¼Ä…cych do wyznaczenia cen oraz parametrÃ³w greckich instrumentÃ³w opisanych w poprzednim rozdziale. KaÅ¼da z nich zwaraca wektor 7 elemetowy zawierajÄ…cy kolejno cenÄ™, deltÄ™ spot, deltÄ™ forward, gamme spot, gamme forward, thetÄ™ oraz vegÄ™. 
+W tym podrozdziale zostan± przedstawione sygnatury funkcji s³u¿±cych do wyznaczenia cen oraz parametrów greckich instrumentów opisanych w poprzednim rozdziale. Ka¿da z nich zwaraca wektor 7 elemetowy zawieraj±cy kolejno cenê, deltê spot, deltê forward, gamme spot, gamme forward, thetê oraz vegê. 
 \subsubsection{DM\_0ut}
-Funcja DM\_out sÅ‚uÅ¼y do wyznaczenia ceny i parametrÃ³w greckich opcji dyskretnie monitorowanych \emph{up and out}, \emph{down and out} 
-\begin{displaymath}
-DM\_out(F\_bid, F\_ask, barrier, strike,monitoring\_dates,issue\_date,expire\_date,PPO,OSO,price\_type,barrier\_type, payoff\_type)
-\end{displaymath}
+Funcja DM\_out s³u¿y do wyznaczenia ceny i parametrów greckich opcji dyskretnie monitorowanych \emph{up and out}, \emph{down and out} 
+\begin{align*}
+DM\_out(F\_bid, F\_ask, barrier, strike,monitoring\_dates,issue\_date,expire\_date,PPO,OSO \\
+,price\_type,barrier\_type, payoff\_type)
+\end{align*}
 \subsubsection{DM\_in}
-Funcja DM\_in sÅ‚uÅ¼y do wyznaczenia ceny i parametrÃ³w greckich opcji dyskretnie monitorowanych \emph{up and in}, \emph{down and in} 
-\begin{displaymath}
-DM\_in(F\_bid, F\_ask, barrier, strike,monitoring\_dates,issue\_date,expire\_date,PPO,OSO,price\_type,barrier\_type, payoff\_type)
-\end{displaymath}
+Funcja DM\_in s³u¿y do wyznaczenia ceny i parametrów greckich opcji dyskretnie monitorowanych \emph{up and in}, \emph{down and in} 
+\begin{align*}
+DM\_in(F\_bid, F\_ask, barrier, strike,monitoring\_dates,issue\_date,expire\_date,PPO,OSO,\\price\_type,barrier\_type, payoff\_type)
+\end{align*}
 
 \subsubsection{Double\_KO}
-Funcja Double\_KO sÅ‚uÅ¼y do wyznaczenia ceny i parametrÃ³w greckich opcji z podwÃ³jnÄ… barierÄ… typu \emph{out}  monitorowanych dyskretnie lub w sposÃ³b ciÄ…gÅ‚y (naleÅ¼y wywoÅ‚aÄ‡ funkcjÄ™ z parametrem monitoring\_dates = []).  
-\begin{displaymath}
-DoubleKO(F\_bid, F\_ask, Lbarrier, Ubarrier, strike,monitoring\_dates,issue\_date,expire\_date,PPO,OSO,price\_type,payoff\_type)
-\end{displaymath}
+Funcja Double\_KO s³u¿y do wyznaczenia ceny i parametrów greckich opcji z podwójn± barier± typu \emph{out}  monitorowanych dyskretnie lub w sposób ci±g³y (nale¿y wywo³aæ funkcjê z parametrem monitoring\_dates = []).  
+\begin{align*}
+DoubleKO(F\_bid, F\_ask, Lbarrier, Ubarrier, strike,monitoring\_dates,issue\_date,expire\_date,\\ PPO,OSO,price\_type,payoff\_type)
+\end{align*}
 
 \subsubsection{KIKO}
-Funcja KIKO sÅ‚uÅ¼y do wyznaczenia ceny i parametrÃ³w greckich opcji z jednÄ… barierÄ… typu \emph{in}, i z drugÄ… barierÄ… typu \emph{out} monitorowanych dyskretnie lub w sposÃ³b ciÄ…gÅ‚y (naleÅ¼y wywoÅ‚aÄ‡ funkcjÄ™ z parametrem monitoring\_dates = []).  
-\begin{displaymath}
-KIKO(F\_bid, F\_ask, Lbarrier, Ubarrier, strike,monitoring\_dates,issue\_date,expire\_date,PPO,OSO,price\_type, payoff\_type)
-\end{displaymath}
+Funcja KIKO s³u¿y do wyznaczenia ceny i parametrów greckich opcji z jedn± barier± typu \emph{in}, i z drug± barier± typu \emph{out} monitorowanych dyskretnie lub w sposób ci±g³y (nale¿y wywo³aæ funkcjê z parametrem monitoring\_dates = []).  
+\begin{align*}
+KIKO(F\_bid, F\_ask, Lbarrier, Ubarrier, strike,monitoring\_dates,issue\_date,expire\_date,PPO,OSO\\,price\_type, payoff\_type)
+\end{align*}
 
 \subsubsection{Window\_out}
-Funcja Window\_out sÅ‚uÅ¼y do wyznaczenia ceny i parametrÃ³w greckich opcji z jednÄ… barierÄ… okienkowÄ… typu \emph{out}.  
-\begin{displaymath}
-Window\_out(F\_bid, F\_ask, barrier, strike, issue\_date, window\_start\_date, window\_end\_date,expire\_date,PPO,OSO,price\_type, barrier\_type, payoff\_type)
-\end{displaymath}
+Funcja Window\_out s³u¿y do wyznaczenia ceny i parametrów greckich opcji z jedn± barier± okienkow± typu \emph{out}.  
+\begin{align*}
+Window\_out(F\_bid, F\_ask, barrier, strike, issue\_date, window\_start\_date, window\_end\_date,\\expire\_date,PPO,OSO,price\_type, barrier\_type, payoff\_type)
+\end{align*}
 
 \subsubsection{Window\_in}
-Funcja Window\_in sÅ‚uÅ¼y do wyznaczenia ceny i parametrÃ³w greckich opcji z jednÄ… barierÄ… okienkowÄ… typu \emph{out}.  
-\begin{displaymath}
-Window\_in(F\_bid, F\_ask, barrier, strike, issue\_date, window\_start\_date, window\_end\_date,expire\_date,PPO,OSO,price\_type, barrier\_type, payoff\_type)
-\end{displaymath}
+Funcja Window\_in s³u¿y do wyznaczenia ceny i parametrów greckich opcji z jedn± barier± okienkow± typu \emph{out}.  
+\begin{align*}
+Window\_in(F\_bid, F\_ask, barrier, strike, issue\_date, window\_start\_date, window\_end\_date,\\expire\_date,PPO,OSO,price\_type, barrier\_type, payoff\_type)
+\end{align*}
 
 
 \subsubsection{Window\_DoubleKO}
-Funcja Window\_DoubleKO sÅ‚uÅ¼y do wyznaczenia ceny i parametrÃ³w greckich opcji z podwÃ³jnÄ… barierÄ… typu \emph{out} aplikowanÄ… w zdefiniowanym przez parametry oknie czasowym.   
-\begin{displaymath}
-Window\_DoubleKO(F\_bid, F\_ask, Lbarrier, Ubarrier, strike,issue\_date, window\_start\_date, window\_end\_date, expire\_date,PPO,OSO,price\_type, payoff\_type)
-\end{displaymath}
+Funcja Window\_DoubleKO s³u¿y do wyznaczenia ceny i parametrów greckich opcji z podwójn± barier± typu \emph{out} aplikowan± w zdefiniowanym przez parametry oknie czasowym.   
+\begin{align*}
+Window\_DoubleKO(F\_bid, F\_ask, Lbarrier, Ubarrier, strike,issue\_date, window\_start\_date, \\window\_end\_date, expire\_date,PPO,OSO,price\_type, payoff\_type)
+\end{align*}
 
 
 \subsubsection{Window\_KIKO}
-Funcja Window\_KIKO sÅ‚uÅ¼y do wyznaczenia ceny i parametrÃ³w greckich opcji z jednÄ… barierÄ… typu \emph{in}, i z drugÄ… barierÄ… typu \emph{out} aplikowanymi w wyznaczonym przez parametry oknie czasowym. 
-\begin{displaymath}
-Window\_KIKO(F\_bid, F\_ask, Lbarrier, Ubarrier, strike,issue\_date, window\_start\_date, window\_end\_date, expire\_date,PPO,OSO,price\_type, payoff\_type)
-\end{displaymath}
+Funcja Window\_KIKO s³u¿y do wyznaczenia ceny i parametrów greckich opcji z jedn± barier± typu \emph{in}, i z drug± barier± typu \emph{out} aplikowanymi w wyznaczonym przez parametry oknie czasowym. 
+\begin{align*}
+Window\_KIKO(F\_bid, F\_ask, Lbarrier, Ubarrier, strike,issue\_date, window\_start\_date,\\ window\_end\_date, expire\_date,PPO,OSO,price\_type, payoff\_type)
+\end{align*}
 
 \subsubsection{CalculatePriceGreeksParisianOut}
-Funcja CalculatePriceGreeksParisianOut sÅ‚uÅ¼y do wyznaczenia ceny i parametrÃ³w greckich opcji typu paryskiego z barierÄ… typu \emph{out}. 
-\begin{displaymath}
-CalculatePriceGreeksParisianOut(F\_bid, F\_ask, barrier,day\_hat, strike,issue\_date,expire\_date,PPO,OSO,price\_type, barrier\_type, payoff\_type,isAsian)
-\end{displaymath}
+Funcja CalculatePriceGreeksParisianOut s³u¿y do wyznaczenia ceny i parametrów greckich opcji typu paryskiego z barier± typu \emph{out}. 
+\begin{align*}
+CalculatePriceGreeksParisianOut(F\_bid, F\_ask, barrier,day\_hat, strike,issue\_date,expire\_date, \\ PPO,OSO,price\_type, barrier\_type, payoff\_type,isAsian)
+\end{align*}
 
 \subsubsection{CalculatePriceGreeksParisianIn}
-Funcja CalculatePriceGreeksParisianIn sÅ‚uÅ¼y do wyznaczenia ceny i parametrÃ³w greckich opcji typu paryskiego z barierÄ… typu \emph{in}. 
-\begin{displaymath}
-CalculatePriceGreeksParisianIn(F\_bid, F\_ask, barrier,day\_hat, strike,issue\_date,expire\_date,PPO,OSO,price\_type, barrier\_type, payoff\_type,isAsian)
-\end{displaymath}
+Funcja CalculatePriceGreeksParisianIn s³u¿y do wyznaczenia ceny i parametrów greckich opcji typu paryskiego z barier± typu \emph{in}. 
+\begin{align*}
+CalculatePriceGreeksParisianIn(F\_bid, F\_ask, barrier,day\_hat, strike,issue\_date,expire\_date,\\ PPO,OSO,price\_type, barrier\_type, payoff\_type,isAsian)
+\end{align*}
