@@ -1,1 +1,64 @@
 \section{Dokumentacja funkcji}
+\subsection{Opis parametrów}
+\subsection{Opis funkcji}
+W tym podrozdziale zostaną przedstawione sygnatury funkcji służących do wyznaczenia cen oraz parametrów greckich instrumentów opisanych w poprzednim rozdziale. Każda z nich zwaraca wektor 7 elemetowy zawierający kolejno cenę, deltę spot, deltę forward, gamme spot, gamme forward, thetę oraz vegę. 
+\subsubsection{DM\_0ut}
+Funcja DM\_out służy do wyznaczenia ceny i parametrów greckich opcji dyskretnie monitorowanych \emph{up and out}, \emph{down and out} 
+\begin{displaymath}
+DM\_out(F\_bid, F\_ask, barrier, strike,monitoring\_dates,issue\_date,expire\_date,PPO,OSO,price\_type,barrier\_type, payoff\_type)
+\end{displaymath}
+\subsubsection{DM\_in}
+Funcja DM\_in służy do wyznaczenia ceny i parametrów greckich opcji dyskretnie monitorowanych \emph{up and in}, \emph{down and in} 
+\begin{displaymath}
+DM\_in(F\_bid, F\_ask, barrier, strike,monitoring\_dates,issue\_date,expire\_date,PPO,OSO,price\_type,barrier\_type, payoff\_type)
+\end{displaymath}
+
+\subsubsection{Double\_KO}
+Funcja Double\_KO służy do wyznaczenia ceny i parametrów greckich opcji z podwójną barierą typu \emph{out}  monitorowanych dyskretnie lub w sposób ciągły (należy wywołać funkcję z parametrem monitoring\_dates = []).  
+\begin{displaymath}
+DoubleKO(F\_bid, F\_ask, Lbarrier, Ubarrier, strike,monitoring\_dates,issue\_date,expire\_date,PPO,OSO,price\_type,payoff\_type)
+\end{displaymath}
+
+\subsubsection{KIKO}
+Funcja KIKO służy do wyznaczenia ceny i parametrów greckich opcji z jedną barierą typu \emph{in}, i z drugą barierą typu \emph{out} monitorowanych dyskretnie lub w sposób ciągły (należy wywołać funkcję z parametrem monitoring\_dates = []).  
+\begin{displaymath}
+KIKO(F\_bid, F\_ask, Lbarrier, Ubarrier, strike,monitoring\_dates,issue\_date,expire\_date,PPO,OSO,price\_type, payoff\_type)
+\end{displaymath}
+
+\subsubsection{Window\_out}
+Funcja Window\_out służy do wyznaczenia ceny i parametrów greckich opcji z jedną barierą okienkową typu \emph{out}.  
+\begin{displaymath}
+Window\_out(F\_bid, F\_ask, barrier, strike, issue\_date, window\_start\_date, window\_end\_date,expire\_date,PPO,OSO,price\_type, barrier\_type, payoff\_type)
+\end{displaymath}
+
+\subsubsection{Window\_in}
+Funcja Window\_in służy do wyznaczenia ceny i parametrów greckich opcji z jedną barierą okienkową typu \emph{out}.  
+\begin{displaymath}
+Window\_in(F\_bid, F\_ask, barrier, strike, issue\_date, window\_start\_date, window\_end\_date,expire\_date,PPO,OSO,price\_type, barrier\_type, payoff\_type)
+\end{displaymath}
+
+
+\subsubsection{Window\_DoubleKO}
+Funcja Window\_DoubleKO służy do wyznaczenia ceny i parametrów greckich opcji z podwójną barierą typu \emph{out} aplikowaną w zdefiniowanym przez parametry oknie czasowym.   
+\begin{displaymath}
+Window\_DoubleKO(F\_bid, F\_ask, Lbarrier, Ubarrier, strike,issue\_date, window\_start\_date, window\_end\_date, expire\_date,PPO,OSO,price\_type, payoff\_type)
+\end{displaymath}
+
+
+\subsubsection{Window\_KIKO}
+Funcja Window\_KIKO służy do wyznaczenia ceny i parametrów greckich opcji z jedną barierą typu \emph{in}, i z drugą barierą typu \emph{out} aplikowanymi w wyznaczonym przez parametry oknie czasowym. 
+\begin{displaymath}
+Window\_KIKO(F\_bid, F\_ask, Lbarrier, Ubarrier, strike,issue\_date, window\_start\_date, window\_end\_date, expire\_date,PPO,OSO,price\_type, payoff\_type)
+\end{displaymath}
+
+\subsubsection{CalculatePriceGreeksParisianOut}
+Funcja CalculatePriceGreeksParisianOut służy do wyznaczenia ceny i parametrów greckich opcji typu paryskiego z barierą typu \emph{out}. 
+\begin{displaymath}
+CalculatePriceGreeksParisianOut(F\_bid, F\_ask, barrier,day\_hat, strike,issue\_date,expire\_date,PPO,OSO,price\_type, barrier\_type, payoff\_type,isAsian)
+\end{displaymath}
+
+\subsubsection{CalculatePriceGreeksParisianIn}
+Funcja CalculatePriceGreeksParisianIn służy do wyznaczenia ceny i parametrów greckich opcji typu paryskiego z barierą typu \emph{in}. 
+\begin{displaymath}
+CalculatePriceGreeksParisianIn(F\_bid, F\_ask, barrier,day\_hat, strike,issue\_date,expire\_date,PPO,OSO,price\_type, barrier\_type, payoff\_type,isAsian)
+\end{displaymath}
