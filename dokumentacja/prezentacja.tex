@@ -1,0 +1,269 @@
+\documentclass{beamer}
+\usetheme{Warsaw}
+\usepackage{textcomp}
+\usepackage{times}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{xcolor}
+%\usepackage{subfigure}
+%\usepackage{enumitem}
+\usepackage[polish]{babel}
+\usepackage{geometry}
+
+\setbeamertemplate{itemize item}{\scriptsize\raise1.25pt\hbox{\donotcoloroutermaths$\blacktriangleright$}}
+\setbeamertemplate{itemize subitem}{\tiny\raise1.5pt\hbox{\donotcoloroutermaths$\blacktriangleright$}}
+\setbeamertemplate{itemize subsubitem}{\tiny\raise1.5pt\hbox{\donotcoloroutermaths$\blacktriangleright$}}
+\setbeamertemplate{enumerate item}{\insertenumlabel.}
+\setbeamertemplate{enumerate subitem}{\insertenumlabel.\insertsubenumlabel}
+\setbeamertemplate{enumerate subsubitem}{\insertenumlabel.\insertsubenumlabel.\insertsubsubenumlabel}
+\setbeamertemplate{enumerate mini template}{\insertenumlabel}
+\usepackage{bbm}
+\usepackage{amsmath}
+
+
+\usepackage{listings}
+\lstset{language=R,%
+   numbers=left,%
+   tabsize=3,%
+   numberstyle=\footnotesize,%
+   basicstyle=\ttfamily \footnotesize \color{black},%
+   escapeinside={(*@}{@*)}}
+	
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,
+            linkcolor=black,
+            citecolor=darkgray,
+            urlcolor=darkgray,
+            pagecolor=darkgray}
+
+\usepackage{longtable}
+% tweaks by Michał Ramsza (changing citations)
+\makeatletter
+\renewcommand\@biblabel[1]{}
+\def\@cite#1#2{{#1\if@tempswa:#2\fi}}
+%\def\@cite#1#2{\unskip\textsuperscript{#1\if@tempswa, #2\fi}} 
+\makeatother
+
+
+% --- wlasne komendy --------------------------------------------------
+\DeclareMathOperator*{\argmax}{\mathrm{argmax}}
+\DeclareMathOperator*{\argmin}{\mathrm{argmin}}
+\DeclareMathOperator*{\qa}{\forall}
+\DeclareMathOperator*{\qe}{\exists}
+\newcommand{\setR}{\mathbb{R}}
+\newcommand{\setN}{\mathbb{N}}
+\newcommand{\trans}[1]{{#1}^{\mathrm{T}}}
+\newcommand{\e}{\mathrm{e}}
+\newcommand{\sgn}[1]{\mathrm{sgn}\left( #1 \right)}
+\newcommand{\T}[1]{T\left(#1\right)}
+\newcommand{\Det}[1]{\mathrm{det}\left( #1\right)}
+\newcommand{\Tr}[1]{\mathrm{tr}\left( #1\right)}
+\newcommand{\I}{\mathrm{I}}
+
+\author{Piotr Bochnia, Paweł Marcinkowski}
+\title{Finanse obliczeniowe - Duży projekt \\ Wycena skomplikowanych opcji barierowych metodą PDE}
+
+\begin{document}
+\begin{frame}
+  \titlepage
+\end{frame}
+\begin{frame}
+  \frametitle{Wyceniane instrumenty}
+
+  \begin{itemize}
+  \item Opcje z barierą monitorowaną dyskretnie
+  \item Opcje z barierą monitorowaną w oknie czasowym
+  \item Opcje paryskie
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Opcje z barierą monitorowaną dyskretnie}
+Niech $0 \leq T_1 < T_2 < \ldots < T_L \leq T$ będą punktami monitorowania bariery. 
+\begin{itemize}
+
+\item \emph{Up and out} z wypłatą $X = f(S_T) \cdot \mathbbm{1}_{\{\forall_{ t \in \{T_1, \ldots, T_L\} } S_t < U \}}$
+\item \emph{Up and in} z wypłatą $X = f(S_T) \cdot \mathbbm{1}_{\{\exists_{ t \in \{T_1, \ldots, T_L\} } S_t \geq U \}}$
+\item \emph{Down and out} z wypłatą $X = f(S_T) \cdot \mathbbm{1}_{\{\forall_{ t \in \{T_1, \ldots, T_L\} } S_t > L \}}$
+\item \emph{Down and in} z wypłatą $X = f(S_T) \cdot \mathbbm{1}_{\{\exists_{ t \in \{T_1, \ldots, T_L\} } S_t \leq L \}}$
+\item \emph{Double Knock-out} z wypłatą $X = f(S_T) \cdot \mathbbm{1}_{\{\forall_{ t \in \{T_1, \ldots, T_L\} } L < S_t  < U \}}$.
+\item \emph{Knock-in Knock-out} z wypłatą $X = f(S_T) \cdot \left( \mathbbm{1}_{\{\exists_{ t \in \{T_1, \ldots, T_L\} } S_t \leq L \} \wedge \forall_{ t \in \{T_1, \ldots, T_L\} } S_t < U \}}\right)$.  
+
+\end{itemize}
+
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Opcje z barierą monitorowaną w oknie czasowym}
+  Niech $0 \leq \tau_1 < \tau_2 \leq T$ będą punktami odpowiednio początku i końca okna, którym monitorowana jest bariera. 
+\begin{itemize}
+\item \emph{Up and out} z wypłatą $X = f(S_T) \cdot \mathbbm{1}_{\{\forall_{ t \in \left[ \tau_1, \tau_2 \right] } S_t < U \}}$
+\item \emph{Up and in} z wypłatą $X = f(S_T) \cdot \mathbbm{1}_{\{\exists_{ t \in \left[ \tau_1, \tau_2 \right] } S_t \geq U \}}$
+\item \emph{Down and out} z wypłatą $X = f(S_T) \cdot \mathbbm{1}_{\{\forall_{ t \in \left[ \tau_1, \tau_2 \right] } S_t > L \}}$
+\item \emph{Down and in} z wypłatą $X = f(S_T) \cdot \mathbbm{1}_{\{\exists_{ t \in \left[ \tau_1, \tau_2 \right] } S_t \leq L \}}$
+\item \emph{Double Knock-out} z wypłatą $X = f(S_T) \cdot \mathbbm{1}_{\{\forall_{ t \in \left[ \tau_1, \tau_2 \right] } L < S_t  < U \}}$
+\item \emph{Knock-in Knock-out} z wypłatą $X = f(S_T) \cdot \left( \mathbbm{1}_{\{\exists_{ t \in \left[ \tau_1, \tau_2 \right] } S_t \leq L \} \wedge \forall_{ t \in \left[ \tau_1, \tau_2 \right] } S_t < U \}}\right)$
+
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Opcje paryskie}
+Jednobarierowe opcje paryskie są kontraktami, w których własność \emph{in} lub \emph{out} jest aktywowana nie w momencie dotknięcia bariery lecz po pewnym ustalonym z góry czasie przebywania ceny instrumentu bazowego nad lub pod barierą (czas barierowy). Opcje typu paryskiego dzielą się na dwie klasy:
+\begin{itemize}
+\item  \emph{Parisian} - W momencie, gdy cena akcji jest równa barierze, czas barierowy jest zerowany.
+\item  \emph{Parasian} - Czas barierowy jest sumą wszyskich przebywań poza barierą.
+\end{itemize}
+Wypłata z opcji jest równa wypłacie z opcji europejskiej po spełnieniu warunków zależnych od typu bariery (analogicznie do tradycyjnych opcji barierowych) i zero w przeciwnym przypadku.
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Funkcje do wyceny}
+\begin{itemize}
+  
+\item{DM\_0ut}
+
+\item{DM\_in}
+
+\item{Double\_KO}
+
+\item{KIKO}
+
+\item{Window\_out}
+
+\item{Window\_in}
+
+\item{Window\_DoubleKO}
+
+\item{Window\_KIKO}
+\item{CalculatePriceGreeksParisianOut}
+
+\item{CalculatePriceGreeksParisianIn}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Input - Argumenty funkcji (1)}
+\begin{itemize}
+\item F\_bid - kurs forward bid
+\item F\_bid - kurs forward ask
+\item barrier - wysokość bariery (w przypadku opcji jednobarierowych, wyrażona w walucie kwotowania)
+\item Lbarrier - wysokość dolnej bariery (w przypadku opcji dwubarierowych, wyrażona w walucie kwotowania)
+\item Ubarrier - wysokość górnej bariery (w przypadku opcji dwubarierowych, wyrażona w walucie kwotowania)
+\item strike - kurs wykonania opcji
+\item barrier\_type - typ bariery (w przypadku opcji jednobarierowych, poprawne wartości: \emph{up}, \emph{down})
+\item payoff\_type - typ opcji (poprawne wartości: \emph{put}, \emph{call})
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Input - Argumenty funkcji (2)}
+\begin{itemize}
+
+\item issue\_date - data zawarcia kontraktu (np. '21-May-2014')
+\item expire\_date - data zapadalności kontraktu (np. '21-May-2014') 
+\item PPO - liczba dni roboczych od daty zawarcia kontraktu do dnia zapłaty premi opcyjnej (\emph{Premium Payment Offset})
+\item OSO - liczba dni roboczych od daty zapadalności opcji do dnia rozliczenia kontraktu (\emph{Option Settlement Offset})
+\item price\_type - typ obliczanej ceny (poprawne wartości: \emph{bid}, \emph{ask})
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Input - Parametry przekazywane przez zmienne globalne}
+
+\begin{itemize}
+\item Mt - liczba punktów siatki w wymiarze czasowym
+\item Mx - liczba punktów siatki w wymiarze przestrzennym
+\item dsigma - przyrost volatility opcji używany do obliczania współczynnika \emph{vega}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Output}
+
+7-elementowy wektor zawierający na kolejnych pozycjach odpowiednio:
+
+\begin{enumerate}
+\item  cenę opcji \item deltę spot\item deltę forward\item gammę spot\item gammę forward\item thetę \item vegę
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Funkcje do wyceny - Opcje z barierą monitorowaną dyskretnie}
+
+  \begin{itemize}
+  \item \small \textsc{DM\_out(F\_bid, F\_ask, barrier, strike, monitoring\_dates, issue\_date, expire\_date, PPO, OSO, price\_type, barrier\_type, payoff\_type)}
+  \item \small \textsc{DM\_in(F\_bid, F\_ask, barrier, strike, monitoring\_dates,issue\_date,expire\_date, PPO, OSO, price\_type,barrier\_type, payoff\_type)}
+  \item \small \textsc{DoubleKO(F\_bid, F\_ask, Lbarrier, Ubarrier, strike,monitoring\_dates, issue\_date, expire\_date, PPO, OSO, price\_type,payoff\_type)}
+  \item \small \textsc{KIKO(F\_bid, F\_ask, Lbarrier, Ubarrier, strike,monitoring\_dates,issue\_date, expire\_date,PPO,OSO, price\_type, payoff\_type)}
+  \end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Funkcje do wyceny - Opcje z barierą monitorowaną dyskretnie - Dodatkowe argumenty}
+
+\begin{itemize}
+\item monitoring\_dates - wektor zawierający daty monitorowania barier w kolejności chronologicznej
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Funkcje do wyceny - Opcje z barierą monitorowaną w oknie czasowym}
+  \begin{itemize}
+  \item \small \textsc{Window\_out(F\_bid, F\_ask, barrier, strike, issue\_date, window\_start\_date, window\_end\_date,expire\_date,PPO,OSO,price\_type, barrier\_type, payoff\_type)}
+  \item \small \textsc{Window\_in(F\_bid, F\_ask, barrier, strike, issue\_date, window\_start\_date, window\_end\_date,expire\_date,PPO,OSO,price\_type, barrier\_type, payoff\_type)
+}
+  \item \small \textsc{Window\_DoubleKO(F\_bid, F\_ask, Lbarrier, Ubarrier, strike,issue\_date, window\_start\_date, window\_end\_date, expire\_date,PPO,OSO,price\_type, payoff\_type)}
+  \item \small \textsc{Window\_KIKO(F\_bid, F\_ask, Lbarrier, Ubarrier, strike,issue\_date, window\_start\_date, window\_end\_date, expire\_date,PPO,OSO,price\_type, payoff\_type}
+
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Funkcje do wyceny - Opcje z barierą monitorowaną w oknie czasowym - Dodatkowe argumenty}
+
+\begin{itemize}
+\item window\_start\_date - data początku okna czasowego, w którym monitorowane są bariery
+\item window\_end\_date - data końca okna czasowego, w którym monitorowane są bariery
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Funkcje do wyceny - Opcje paryskie}
+  \begin{itemize}
+  \item \small \textsc{CalculatePriceGreeksParisianOut(F\_bid, F\_ask, barrier,day\_hat, strike,issue\_date,expire\_date,PPO, OSO, price\_type, barrier\_type, payoff\_type,isAsian)}
+  \item \small \textsc{CalculatePriceGreeksParisianIn(F\_bid, F\_ask, barrier,day\_hat, strike,issue\_date,expire\_date, PPO, OSO, price\_type, barrier\_type, payoff\_type,isAsian)}
+
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Funkcje do wyceny - Opcje paryskie - Dodatkowe argumenty}
+
+\begin{itemize}
+\item day\_hat - czas przebywania poza barierą konieczny do aktywacji bariery (w przypadku opcji paryskich, wyrażony w dniach)
+\item isAsian - parametr określający typ opcji paryskiej 0 - \emph{Parisian}, 1 - \emph{Parasian} (poprawne wartości: 0, 1)
+\end{itemize}
+
+\end{frame}
+\end{document}
